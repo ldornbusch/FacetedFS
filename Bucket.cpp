@@ -1,8 +1,9 @@
 // bucket.cpp: Implementierung der Klasse bucket.
 //
 //////////////////////////////////////////////////////////////////////
-
+#pragma warning( disable :  4786 )
 #include "bucket.h"
+#include <sstream>
 //////////////////////////////////////////////////////////////////////
 // Konstruktion/Destruktion
 //////////////////////////////////////////////////////////////////////
@@ -63,25 +64,41 @@ void Bucket::addFileToBucket(APP_NAME::File newFile){
 	}
 }
 
-void Bucket::debug_print(){
+void Bucket::debug_print(const std::string preset){
+	std::string strTreeChar="--";
+
+	std::string strOffset;
+	std::stringstream stream;
+	stream << preset << strTreeChar;
+	stream >> strOffset ;
+
+	printf(strOffset.c_str());
 	printf(this->strName.c_str());
 	printf(":\n");
+
 	for (std::map<std::string, void*>::iterator it1 = folder.begin(); it1!= folder.end(); it1++){
 		std::string strBucketVal = (*it1).first;
 		Bucket* tmp_folder= (Bucket*)(*it1).second;
+		printf(strOffset.c_str());
 		printf(strBucketVal.c_str());
 		printf(":\n");
-		tmp_folder->debug_print();
-		printf("-----unmatched of ");
+		tmp_folder->debug_print(strOffset);
+	}
+
+	if(vecNoMatch.size()>0){
+		printf(strOffset.c_str());
+		printf("Unmatched of ");
 		printf(this->strName.c_str());
 		printf(":\n");
+
+		for (std::vector<File>::iterator it2 = vecNoMatch.begin(); it2!= vecNoMatch.end(); it2++){
+			printf(strOffset.c_str());
+			printf((*it2).file_name.c_str());
+			printf("\n");
+		}
 	}
-	for (std::vector<File>::iterator it2 = vecNoMatch.begin(); it2!= vecNoMatch.end(); it2++){
-		printf((*it2).file_name.c_str());
-		printf("\n");
-	}
-		printf("-----end of ");
-		printf(this->strName.c_str());
-		printf(":\n");
-		
+	printf(strOffset.c_str());
+	printf("End of ");
+	printf(this->strName.c_str());
+	printf(":\n");
 }

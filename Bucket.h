@@ -35,7 +35,7 @@ namespace APP_NAME{
 		int getFileNumber();
 		void addFileToBucket(const APP_NAME::File newFile);
 		bool hasValue(const std::string value);	
-		void debug_print();
+		void debug_print(const std::string preset="");
 	};
 }
 
