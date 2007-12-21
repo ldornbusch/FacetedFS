@@ -24,7 +24,7 @@ namespace APP_NAME{
 		virtual ~Tag();
 		// this function will alway return a string representation of  which can 
 		std::string getTagname() const{ return this->tag_name;};
-		const std::string getStringValue(){ return "true";	}
+		virtual std::string getStringValue() const { return "true";	}
 	};
 }
 #endif // !defined(AFX_TAG_H__71B189AA_5594_481B_803B_339DF24D0F71__INCLUDED_)

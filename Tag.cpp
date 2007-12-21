@@ -1,6 +1,7 @@
 // Tag.cpp: Implementierung der Klasse Tag.
 //
 //////////////////////////////////////////////////////////////////////
+#pragma warning( disable :  4786 )
 
 #include "tag.h"
 
@@ -9,14 +10,12 @@
 //////////////////////////////////////////////////////////////////////
 using namespace APP_NAME;
 
-Tag::Tag()
+Tag::Tag() : tag_name("")
 {
-	this->tag_name="";
 }
 
-Tag::Tag(std::string name)
+Tag::Tag(std::string name): tag_name(name)
 {
-	this->tag_name = name;
 }
 
 Tag::~Tag()

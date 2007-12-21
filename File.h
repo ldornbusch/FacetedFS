@@ -24,11 +24,11 @@ namespace APP_NAME{
 		File(std::string name);
 		virtual ~File();
 		std::string file_name;
-		std::map<std::string, APP_NAME::Tag> map_FileTags;
+		std::map<std::string, APP_NAME::Tag*> map_FileTags;
 
-		void setTag(const Tag);
+		void setTag(Tag&);
 		bool hasTag(const std::string strTagName) const ;
-		Tag getTag(const std::string strTagName) ;
+		Tag& getTag(const std::string strTagName) ;
 	};
 }
 #endif // !defined(AFX_FILE_H__D32C6255_C161_4220_A63C_3D5219871EA7__INCLUDED_)

@@ -1,7 +1,7 @@
 // File.cpp: Implementierung der Klasse File.
 //
 //////////////////////////////////////////////////////////////////////
-
+#pragma warning( disable :  4786 )
 #include "file.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -24,9 +24,9 @@ File::~File()
 
 }
 
-void File::setTag(const Tag tag2set){
+void File::setTag(Tag& tag2set){
 	if (tag2set.getTagname().length()>0){
-		this->map_FileTags[tag2set.getTagname()]=tag2set;
+		this->map_FileTags[tag2set.getTagname()]=&tag2set;
 	}
 }
 
@@ -34,10 +34,10 @@ bool File::hasTag(const std::string strTagName) const {
 	return this->map_FileTags.find(strTagName)!=map_FileTags.end();
 }
 
-Tag File::getTag(const std::string strTagName) {
-	Tag retVal;
+Tag& File::getTag(const std::string strTagName) {
+	Tag* retVal;
 	if (this->hasTag(strTagName)){
 		retVal = this->map_FileTags[strTagName];
 	}
-	return retVal;
+	return *retVal;
 }

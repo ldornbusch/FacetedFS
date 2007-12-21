@@ -1,9 +1,14 @@
 // meta_tree_cmd.cpp : Definiert den Einsprungpunkt für die Konsolenanwendung.
 //
+#pragma warning( disable :  4786 )
+
 #include <stdio.h>
 #include <vector>
 
 #include "bucket.h"
+#include "NumberTag.h"
+#include "StringTag.h"
+
 
 int main(int argc, char* argv[])
 {
@@ -16,6 +21,8 @@ int main(int argc, char* argv[])
 	vec_SortTags.push_back(tag1);
 
 	File myFileA("FileA"), myFileB("FileB"), myFileC("FileC"), myFileD("FileD");
+	File myFileE("FileE"), myFileF("FileF"), myFileG("FileG"), myFileH("FileH");
+	File myFileI("FileI"), myFileJ("FileJ"), myFileK("FileK"), myFileL("FileL");
 	myFileA.setTag(Tag(tag1));
 	myFileA.setTag(Tag(tag2));
 	myFileA.setTag(Tag(tag3));
@@ -23,14 +30,39 @@ int main(int argc, char* argv[])
 	myFileB.setTag(Tag(tag2));
 	myFileC.setTag(Tag(tag1));
 
+	myFileE.setTag(*(new NumberTag(tag1,1.0)));
+	myFileF.setTag(*new NumberTag(tag1,2.0));
+	myFileG.setTag(*new NumberTag(tag1,3.0));
+	myFileH.setTag(*new NumberTag(tag2,1.0));
+
+	myFileI.setTag(*(new StringTag(tag1,"superDuper")));
+	myFileI.setTag(*(new StringTag(tag2,"nett")));
+	myFileI.setTag(*(new StringTag(tag3,"cool")));
+	myFileJ.setTag(*new StringTag(tag1,"Mega Maessig"));
+	myFileJ.setTag(*(new StringTag(tag2,"auch nett")));
+	myFileK.setTag(*new StringTag(tag1,"superDuper"));
+	myFileL.setTag(*new StringTag(tag2,"genial"));
+
 	Bucket rootBucket;
 	rootBucket.init(vec_SortTags);
+
+//	Tag* n = &(myFileE.getTag(tag1));
+//	std::string s = n->getStringValue();
+
 	rootBucket.addFileToBucket(myFileA);
 	rootBucket.addFileToBucket(myFileB);
 	rootBucket.addFileToBucket(myFileC);
 	rootBucket.addFileToBucket(myFileD);
+	rootBucket.addFileToBucket(myFileE);
+	rootBucket.addFileToBucket(myFileF);
+	rootBucket.addFileToBucket(myFileG);
+	rootBucket.addFileToBucket(myFileH);
+	rootBucket.addFileToBucket(myFileI);
+	rootBucket.addFileToBucket(myFileJ);
+	rootBucket.addFileToBucket(myFileK);
+	rootBucket.addFileToBucket(myFileL);
 
-	rootBucket.debug_print();
+	rootBucket.debug_print("--");
 
 	return 0;
 }
