@@ -64,7 +64,7 @@ LINK32=link.exe
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /FR /YX /FD /GZ /c
 # ADD BASE RSC /l 0x407 /d "_DEBUG"
 # ADD RSC /l 0x407 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -93,11 +93,19 @@ SOURCE=.\File.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\FS_HAL.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\meta_tree_cmd.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\NumberTag.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\StringTag.cpp
 # End Source File
 # Begin Source File
 
@@ -121,11 +129,15 @@ SOURCE=.\File.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\FS_HAL.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\NumberTag.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\StdAfx.h
+SOURCE=.\StringTag.h
 # End Source File
 # Begin Source File
 
