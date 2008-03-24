@@ -24,6 +24,9 @@ namespace APP_NAME{
 		std::string getStringValue() const ;
 		double getValue() const ;
 		void setValue(double val);
+		virtual int getLength() const { return sizeof(double); };
+		virtual tag_type getType() const { return TAG_TYPE_NUMBER;}
+		virtual void writeValue(void* memptr) const { *(double*)memptr = value;}
 	private:
 		double value;
 	};

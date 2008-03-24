@@ -24,6 +24,9 @@ namespace APP_NAME{
 		std::string getStringValue() const ;
 		std::string getValue() const ;
 		void setValue(std::string val);
+		virtual int getLength() const { return value.length(); };
+ 		virtual tag_type getType() const { return TAG_TYPE_STRING;}
+ 		virtual void writeValue(void* memptr) const {memcpy(memptr, value.c_str(), value.length()); }
 
 	private:
 		std::string value;
