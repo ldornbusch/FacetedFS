@@ -37,8 +37,6 @@ bool Bucket::hasValue(const std::string value){
 
 /** will sort file into the apropriate bucket chain through recursion.
 		returns if the file was filled into the bucket.
-		The caller-bucket who receives a false-return, will put it into 
-		his own unmatched folder and returns true(as finally file was sorted in)
 */
 void Bucket::addFileToBucket(APP_NAME::File newFile){
 	// check if File has this Tag..
