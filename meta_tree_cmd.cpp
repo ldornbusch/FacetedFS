@@ -19,13 +19,12 @@ int main(int argc, char* argv[])
 	// testing load/save of tags
 	std::string filename="c:\\LinkSrc.txt";
 	File testFile(filename);
-	testFile.setTag(Tag("BOOLTAG"));
-  testFile.setTag(*(new NumberTag("PI",3.14)));
-  testFile.setTag(*(new StringTag("Hallo","Welt")));
+//	testFile.setTag(Tag("BOOLTAG"));
+//  testFile.setTag(*(new NumberTag("PI",3.141592)));
+//  testFile.setTag(*(new StringTag("Hallo","Lutz")));
 	FS_HAL::load(testFile);
-	FS_HAL::save(testFile);
+//	FS_HAL::save(testFile);
 
-	printf("\n");
 	// testing the creation of a File Link
 	DWORD result ;
 	result = FS_HAL::createHardLink("c:\\LinkDest.txt",filename);

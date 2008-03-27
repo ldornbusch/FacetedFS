@@ -52,16 +52,28 @@ namespace APP_NAME{
 		static DWORD createHardLink(const std::string DestPath, const std::string SourcePath);
 		static DWORD init();
 		static void unload();
-		static void load(File& file, const std::vector<std::string> filter=std::vector<std::string>());
-		static void save(const File& file);
+		static int load(File& file, const std::vector<std::string> filter=std::vector<std::string>());
+		static int save(const File& file);
 	};
-	
+	enum file_error{
+		FILE_OK,
+    FILE_NOT_FOUND,
+		FILE_UNSUPPORTED_FORMAT,
+		FILE_OUT_OF_MEMORY
+
+	};
+
 	enum chunk_ids{ 
 		CHUNK_ID_DUMMY,					// matched to 0
 		CHUNK_ID_TAGS,
 		CHUNK_ID_VALS
 	};	
 	#define FILE_ID 'GTTM'	// THE ID means: MeTaTaG (without vowels)
+	const int sizeof_TagFile  = 6 ;  // we cannot use sizeof, as it may contain paddingbytes!
+	const int sizeof_TagChunk = 9 ;
+	const int sizeof_ValueChunk = 4 ;
+	const int sizeof_ChunkContainer = 5 ;
+
 
 	struct ChunkContainer{
 		BYTE	ChunkID;						// 0x01(CHUNK_ID_TAGS) oder 0x02 (CHUNK_ID_VALS)
@@ -78,12 +90,12 @@ namespace APP_NAME{
 
 	struct ValueChunk{
 			DWORD ChunkLen;						// len of chunk in Bytes
-			void* ChunkData;					// arbitrary length data
 	};
 
 	struct TagChunk : ValueChunk{
 			DWORD ChunkOffset;				// offset to value chunk (relative to begin of file in Bytes)
       BYTE	TagType;            // 0x00=bool, 0x01=number, 0x02=string
+			std::string TagName;					// arbitrary length data
 	};
 
 }

@@ -10,6 +10,7 @@
 #pragma comment( lib, "advapi32.lib" )
 
 #include "FS_HAL.h"
+#include "TagFactory.h"
 
 using namespace APP_NAME;
 // static Membervariables: pointer to dll-function and Module handle for library
@@ -93,9 +94,86 @@ file object which was given as parameter. The filename will be retrieved
 by parameter
 @param File			File class which represents the file which tags should be loaded
 @param filter		(optional) if this vector is nonempty, only tags with matching names will be loaded
+@returns  0, if no error occured or errorcode
 */
-void FS_HAL::load(File& file, const std::vector<std::string> filter){
-	
+int FS_HAL::load(File& file, const std::vector<std::string> filter){
+	int retVal=FILE_NOT_FOUND;
+	ChunkContainer	TagContainer;
+	TagFile		FileHeader;
+	file.map_FileTags.clear();
+	FILE* Handle = fopen(file.file_name.c_str(), "r");
+	if (Handle != 0){
+		retVal=FILE_UNSUPPORTED_FORMAT;
+		fread(&FileHeader.FormatSpecifier,4,1,Handle);
+		fread(&FileHeader.MajorVersion,1,1,Handle);
+		fread(&FileHeader.MinorVersion,1,1,Handle);
+		if (  FileHeader.FormatSpecifier == FILE_ID
+		   && FileHeader.MajorVersion == 0
+			 && FileHeader.MinorVersion == 1){
+
+			retVal=FILE_OK;
+			fread(&TagContainer.ChunkID,1,1,Handle);
+			fread(&TagContainer.ChunkLen,4,1,Handle);
+			std::vector<TagChunk*> TagNames;
+
+      int bytesread=sizeof_ChunkContainer;
+			while(bytesread< TagContainer.ChunkLen){
+				TagChunk* tmpTag = new TagChunk();
+				fread(&tmpTag->ChunkLen,4,1,Handle);
+				fread(&tmpTag->ChunkOffset,4,1,Handle);
+				fread(&tmpTag->TagType,1,1,Handle);
+				retVal = FILE_OUT_OF_MEMORY;
+				BYTE* mem = (BYTE*)malloc(sizeof(BYTE)*tmpTag->ChunkLen-9 + 1);	// one additional byte for the \0
+        if (mem != 0){
+					fread(mem, tmpTag->ChunkLen-9,1, Handle);
+					mem[tmpTag->ChunkLen-9] = 0;
+					tmpTag->TagName = (char*) mem;
+					free(mem);
+					mem=0;
+					bytesread += tmpTag->ChunkLen;
+          // check if this tag was requested..
+					bool requested = false;
+					std::vector<std::string>::const_iterator it;
+					for (it=filter.begin(); it!=filter.end(); ++it){
+						if (tmpTag->TagName.compare(*it)==0)
+							requested=true;
+							break;
+					}
+					if (requested || filter.size()==0){
+						TagNames.push_back(tmpTag);	
+					} else {
+						delete tmpTag;
+					}
+        }
+			}
+			// now we have a vector full of tagstructures and we now going to load the appropiate Values and after this we will construct the tag-Objects and add them to file
+			std::vector<TagChunk*>::const_iterator it;
+			for (it=TagNames.begin(); it != TagNames.end(); ++it){
+        if ((*it)->TagType != TAG_TYPE_BOOL){	// BOOL TAGS do not have any value chunks
+					ValueChunk tmpVal;
+					fseek(Handle,(*it)->ChunkOffset ,SEEK_SET);
+					fread(&tmpVal.ChunkLen,4,1,Handle);
+					BYTE* mem = (BYTE*)malloc(sizeof(BYTE)*tmpVal.ChunkLen-4 + 1); // here also we need an extra byte for delimiting our string
+					if(mem != 0){
+						fread(mem, tmpVal.ChunkLen-4,1, Handle);
+						mem[tmpVal.ChunkLen-4] = 0;
+						Tag* myTag = TagFactory::createTag((*it)->TagName, static_cast<tag_type>((*it)->TagType), mem );
+						file.setTag(*myTag);
+						free(mem);
+						mem = 0;
+					}
+				} else {		// creation of BOOL Tags is very simple because no extra data is read from file
+					Tag* myTag = TagFactory::createTag((*it)->TagName, TAG_TYPE_BOOL, 0);
+					file.setTag(*myTag);
+				}	
+			}
+			for (it=TagNames.begin(); it != TagNames.end(); ++it){
+				delete (*it);
+			}
+			retVal = FILE_OK;
+		}
+	}
+	return retVal;	
 }
 
 /** save(const File& ) Function will save all tags and will save them into the 
@@ -108,8 +186,9 @@ the complete Tags file new
 How we work: 
 please read documentation for fileformat-spezification
 @param File file which tags should be saved
+@returns int: 0, if no error occured or errorcode
 */
-void FS_HAL::save(const File& file){
+int FS_HAL::save(const File& file){
 
 	std::map<std::string, APP_NAME::Tag*>::const_iterator it = file.map_FileTags.begin();
 
@@ -124,11 +203,6 @@ void FS_HAL::save(const File& file){
 		}
 	}
 
-	const int sizeof_TagFile  = 6 ;  // we cannot use sizeof, as it may contain paddingbytes!
-	const int sizeof_TagChunk = 9 ;
-	const int sizeof_ValueChunk = 4 ;
-	const int sizeof_ChunkContainer = 5 ;
-
   int TagsChunkSize = sizeof_ChunkContainer 
 												+ TagCount * sizeof_TagChunk 
 												+ TagLen ;
@@ -141,7 +215,7 @@ void FS_HAL::save(const File& file){
 										+ TagsChunkSize
 										+ ValuesChunkSize ;
 
-  FILE* Handle = fopen(file.file_name.c_str(), "a");
+  FILE* Handle = fopen(file.file_name.c_str(), "w");
 
 	TagFile FileHeader;
 	ChunkContainer Tags, Values;
@@ -198,8 +272,10 @@ void FS_HAL::save(const File& file){
 			it->second->writeValue(mem);
 			fwrite(&Val2Write.ChunkLen, 4, 1, Handle);
 			fwrite(mem, it->second->getLength(), 1, Handle);
-			free(mem);		
+			free(mem);
+			mem = 0;
     }
 	}
 	fclose(Handle);
+	return 0;
 }

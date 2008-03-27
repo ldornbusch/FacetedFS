@@ -111,6 +111,10 @@ SOURCE=.\StringTag.cpp
 
 SOURCE=.\Tag.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\TagFactory.cpp
+# End Source File
 # End Group
 # Begin Group "Header-Dateien"
 
@@ -142,6 +146,10 @@ SOURCE=.\StringTag.h
 # Begin Source File
 
 SOURCE=.\Tag.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\TagFactory.h
 # End Source File
 # End Group
 # Begin Group "Ressourcendateien"
