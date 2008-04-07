@@ -94,7 +94,11 @@ int Command::del(std::string FileName, std::string TagName){
 	File myFile(FileName);
 	retVal = FS_HAL::load(myFile, std::vector<std::string>());
 	if (retVal == 0){
-		myFile.map_FileTags.erase(myFile.map_FileTags.find(TagName));
+		std::map<std::string,APP_NAME::Tag*>::iterator it;
+		it = myFile.map_FileTags.find(TagName);
+		if (it != myFile.map_FileTags.end()){
+			myFile.map_FileTags.erase(it);
+		}
 		FS_HAL::save(myFile);
 	}
 	return retVal;
