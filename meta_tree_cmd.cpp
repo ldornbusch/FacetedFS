@@ -25,7 +25,8 @@ int main(int argc, char* argv[])
 	Command::set("c:\\TagTest.txt","LolliCount","4.322","NUMBER");
 	Command::set("c:\\TagTest.txt","LolliName", "Lutz");
  	Command::get("c:\\TagTest.txt", vec);
-
+	Command::del("c:\\TagTest.txt","LolliCount");
+ 	Command::get("c:\\TagTest.txt");
 	exit(0);
 	// testing load/save of tags
 	std::string filename="c:\\LinkSrc.txt";

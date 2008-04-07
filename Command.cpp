@@ -89,6 +89,17 @@ int Command::set(std::string FileName, std::string TagName, std::string TagValue
 	return retVal;
 }
 
+int Command::del(std::string FileName, std::string TagName){
+	int retVal = 0;
+	File myFile(FileName);
+	retVal = FS_HAL::load(myFile, std::vector<std::string>());
+	if (retVal == 0){
+		myFile.map_FileTags.erase(myFile.map_FileTags.find(TagName));
+		FS_HAL::save(myFile);
+	}
+	return retVal;
+}
+
 std::string Command::getTypeName(int iType){
 	std::string retVal = "tag_type_not_found";
 	switch (iType){
