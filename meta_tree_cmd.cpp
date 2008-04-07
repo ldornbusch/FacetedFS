@@ -17,9 +17,16 @@ int main(int argc, char* argv[])
 {
 	using namespace APP_NAME;
 	std::vector<std::string> vec;
-	vec.push_back("BOOLTAG");
-	Command::get("c:\\LinkSrc.txt", vec);
+//	vec.push_back("Hallo");
+//	vec.push_back("PI");
+	//Command::get("c:\\LinkSrc.txt", vec);
 
+	Command::set("c:\\TagTest.txt","Lollipop");
+	Command::set("c:\\TagTest.txt","LolliCount","4.322","NUMBER");
+	Command::set("c:\\TagTest.txt","LolliName", "Lutz");
+ 	Command::get("c:\\TagTest.txt", vec);
+
+	exit(0);
 	// testing load/save of tags
 	std::string filename="c:\\LinkSrc.txt";
 	File testFile(filename);

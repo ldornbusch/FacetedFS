@@ -60,7 +60,10 @@ namespace APP_NAME{
 	class Command  
 	{
 	public:
-		static int get(std::string Filename, std::vector<std::string> TagList);
+		static int get(std::string FileName, std::vector<std::string> TagList);
+		static int set(std::string FileName, std::string TagName, std::string TagValue="");
+		static int set(std::string FileName, std::string TagName, std::string TagValue, std::string TagType);
+		static std::string getTypeName(int iType);
 	};
 }
 
