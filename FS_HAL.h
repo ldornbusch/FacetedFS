@@ -57,10 +57,10 @@ namespace APP_NAME{
 	};
 	enum file_error{
 		FILE_OK,
-    FILE_NOT_FOUND,
+		FILE_NOT_FOUND,
+		FILE_EMPTY,
 		FILE_UNSUPPORTED_FORMAT,
 		FILE_OUT_OF_MEMORY
-
 	};
 
 	enum chunk_ids{ 

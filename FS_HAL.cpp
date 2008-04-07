@@ -105,6 +105,9 @@ int FS_HAL::load(File& file, const std::vector<std::string> filter){
 	if (Handle != 0){
 		retVal=FILE_UNSUPPORTED_FORMAT;
 		fread(&FileHeader.FormatSpecifier,4,1,Handle);
+		if (feof(Handle)){
+			retVal=FILE_EMPTY;
+		}
 		fread(&FileHeader.MajorVersion,1,1,Handle);
 		fread(&FileHeader.MinorVersion,1,1,Handle);
 		if (  FileHeader.FormatSpecifier == FILE_ID
@@ -135,9 +138,10 @@ int FS_HAL::load(File& file, const std::vector<std::string> filter){
 					bool requested = false;
 					std::vector<std::string>::const_iterator it;
 					for (it=filter.begin(); it!=filter.end(); ++it){
-						if (tmpTag->TagName.compare(*it)==0)
+						if (tmpTag->TagName.compare(*it)==0){
 							requested=true;
 							break;
+						}
 					}
 					if (requested || filter.size()==0){
 						TagNames.push_back(tmpTag);	
