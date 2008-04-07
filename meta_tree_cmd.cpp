@@ -9,12 +9,16 @@
 #include "bucket.h"
 #include "NumberTag.h"
 #include "StringTag.h"
+#include "Command.h"
 
 
 
 int main(int argc, char* argv[])
 {
 	using namespace APP_NAME;
+	std::vector<std::string> vec;
+	vec.push_back("BOOLTAG");
+	Command::get("c:\\LinkSrc.txt", vec);
 
 	// testing load/save of tags
 	std::string filename="c:\\LinkSrc.txt";
