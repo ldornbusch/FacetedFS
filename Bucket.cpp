@@ -24,7 +24,10 @@ void Bucket::init(const std::vector<Tag> tags2sort){
 		this->vecTags2Match = tags2sort;
 		this->vecTags2Match.pop_back();
 	}
-	this->strName = topTag.getTagname();		// this name will be "" and so we know this is the last tag in the folder chain so all values which has all other tags will be ste into these buckets into the matched folder
+	// this name will be "" and so we know this is the last tag in the 
+	// folder chain so all values which has all other tags will be ste 
+	// into these buckets into the matched folder
+	this->strName = topTag.getTagname();		
 }
 
 int Bucket::getFileNumber(){
@@ -40,7 +43,8 @@ bool Bucket::hasValue(const std::string value){
 */
 void Bucket::addFileToBucket(APP_NAME::File newFile){
 	// check if File has this Tag..
-	if (this->strName.length()>0 ){		// last folderchain: put file into own match-vector
+	if (this->strName.length()>0 ){		
+		// last folderchain: put file into own match-vector
 		if (newFile.hasTag(this->strName)){
 			std::string val = newFile.getTag(this->strName).getStringValue();
 
@@ -48,7 +52,9 @@ void Bucket::addFileToBucket(APP_NAME::File newFile){
 			Bucket* ptrBucket = 0; 
 			if (this->hasValue(val)){
 				ptrBucket = (Bucket*)this->folder[val];
-			}else{	// create new bucket with this value, put its adress into the folder and recurse
+			}else{	
+				// create new bucket with this value, put its adress into the 
+				// folder and recurse
 				ptrBucket = new Bucket();
 				ptrBucket->init(this->vecTags2Match);
 				this->folder[val]=ptrBucket;
@@ -74,7 +80,8 @@ void Bucket::debug_print(const std::string preset){
 	printf(this->strName.c_str());
 	printf(":\n");
 
-	for (std::map<std::string, void*>::iterator it1 = folder.begin(); it1!= folder.end(); it1++){
+	for (std::map<std::string, void*>::iterator it1 = folder.begin(); 
+	                                            it1!= folder.end(); it1++){
 		std::string strBucketVal = (*it1).first;
 		Bucket* tmp_folder= (Bucket*)(*it1).second;
 		printf(strOffset.c_str());
@@ -89,7 +96,8 @@ void Bucket::debug_print(const std::string preset){
 		printf(this->strName.c_str());
 		printf(":\n");
 
-		for (std::vector<File>::iterator it2 = vecNoMatch.begin(); it2!= vecNoMatch.end(); it2++){
+		for (std::vector<File>::iterator it2 = vecNoMatch.begin(); 
+		                                 it2!= vecNoMatch.end(); it2++){
 			printf(strOffset.c_str());
 			printf((*it2).file_name.c_str());
 			printf("\n");
@@ -98,5 +106,5 @@ void Bucket::debug_print(const std::string preset){
 	printf(strOffset.c_str());
 	printf("End of ");
 	printf(this->strName.c_str());
-	printf(":\n");
+	printf("\n");
 }

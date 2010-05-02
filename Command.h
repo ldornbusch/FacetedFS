@@ -28,16 +28,17 @@
 //																			will be removed!
 //		meta_tree ls/list(	filename,
 //												filename,[..])lists all tags from all files in 
-//																			this list
+//																			this list (difference to get: 
+//																			no TAGLIST, so get without taglist is same)
 //
 //
-//		meta_tree search( dirname, 
+//		meta_tree search/filter( dirname, 
 //											tagname[="tagvalue"],
 //											tagname,[..])		will output only files which have all
-//																			tags set (to a given value)
+//																			tags set (may be to a given value)
 //		meta_tree sort(	src_dir, 
 //										dst_dir, 
-//										tagname[="tagvalue"],
+//										tagname[="tagvalue"], <-- vec<pair<std::string, std::string>>
 //										tagname,[...])    will hardlink all files from src_dir
 //																			to a new structure in dst_dir with 
 //																			the tags as folders and all files 
@@ -64,6 +65,11 @@ namespace APP_NAME{
 		static int get(std::string FileName, std::vector<std::string> TagList = std::vector<std::string>());
 		static int set(std::string FileName, std::string TagName, std::string TagValue="");
 		static int set(std::string FileName, std::string TagName, std::string TagValue, std::string TagType);
+
+		static int list(std::vector<std::string> Filenames);
+    static int sort (std::string src_dir, std::string dst_dir, std::vector<std::pair<std::string, std::string*> > tags);
+    static int search (std::string src_dir, std::vector<std::pair<std::string, std::string*> > tags);
+
 		static std::string getTypeName(int iType);
 	};
 }

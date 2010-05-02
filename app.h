@@ -10,6 +10,6 @@
 #endif // _MSC_VER > 1000
 
 #define APP_NAME meta_tree 
-#define ADS_NAME APP_NAME
+#define ADS_NAME ":meta_tree"
 
 #endif // !defined(AFX_APP_H__E0E83B64_BCB3_4192_AD85_54071E94E306__INCLUDED_)

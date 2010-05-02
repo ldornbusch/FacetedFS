@@ -1,6 +1,6 @@
 // command.cpp: Implementierung der Klasse command.
 //
-//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 #pragma warning( disable :  4786 )
 
 #include <stdio.h>
@@ -15,9 +15,9 @@
 
 using namespace APP_NAME;
 
-//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // Konstruktion/Destruktion
-//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 using namespace APP_NAME;
 int Command::get(std::string Filename, std::vector<std::string> TagList){
   int retVal=0;
@@ -33,9 +33,16 @@ int Command::get(std::string Filename, std::vector<std::string> TagList){
 			outputstream >> outputstring;
 			printf(outputstring.c_str());
 			printf("\n");
-			for (it = myFile.map_FileTags.begin(); it != myFile.map_FileTags.end();++it){
-        outputstream.clear();
-				outputstream << it->first << "[" << Command::getTypeName(it->second->getType()) << "]:" ;
+			boolean first = true;
+			for (it = myFile.map_FileTags.begin(); 
+				   it != myFile.map_FileTags.end();
+					 ++it){
+				if (!first){
+					printf("\n     --- separator ---\n");
+				}
+				outputstream.clear();
+				outputstream << it->first << "[" << 
+					Command::getTypeName(it->second->getType()) << "]:" ;
 				outputstream >> outputstring;
 				printf(outputstring.c_str());
 				outputstream.clear();
@@ -45,8 +52,9 @@ int Command::get(std::string Filename, std::vector<std::string> TagList){
 					outputstream >> outputstring;
 					printf(outputstring.c_str());
 				}
-				printf("\n     --- separator ---\n");
+				first = false;		// output separator before output
 			}
+			printf("\n     --- END ---\n");
 		}	else{
 			retVal=5; // TODO:UNIFY ERROR CODES   This one means: TAGS NOT MATCHING
 		}
@@ -54,7 +62,9 @@ int Command::get(std::string Filename, std::vector<std::string> TagList){
 	return retVal;
 }
 
-int Command::set(std::string FileName, std::string TagName, std::string TagValue){
+int Command::set(std::string FileName, 
+								 std::string TagName, 
+								 std::string TagValue){
 	int retVal = 0;
 	if (TagValue.length() == 0){
 		retVal = Command::set(FileName, TagName, TagValue, "BOOL");
@@ -64,13 +74,17 @@ int Command::set(std::string FileName, std::string TagName, std::string TagValue
 	return retVal;
 }
 
-int Command::set(std::string FileName, std::string TagName, std::string TagValue, std::string TagType){
+int Command::set(std::string FileName, 
+								 std::string TagName, 
+								 std::string TagValue, 
+								 std::string TagType){
 	int retVal = 0;
 	File myFile(FileName);
 	retVal = FS_HAL::load(myFile, std::vector<std::string>());
-	if (retVal == 0 || retVal == FILE_EMPTY){
+	if (retVal == 0 || retVal == FILE_EMPTY || retVal == FILE_NOT_FOUND){
     Tag * myTag = 0;
-		retVal = 6 ;  // TODO:UNIFY ERROR CODES   This one means: TAGTYPE NOT IMPLEMENTED
+		retVal = 6 ;  
+		// TODO:UNIFY ERROR CODES   This one means: TAGTYPE NOT IMPLEMENTED
 		if (TagType == "BOOL"){
 			myTag = new Tag(TagName);
 		}
