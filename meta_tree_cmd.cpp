@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <vector>
 
+#include <dirent.h>
+
 #include "FS_HAL.h"
 #include "bucket.h"
 #include "NumberTag.h"
@@ -12,38 +14,106 @@
 #include "Command.h"
 
 
+// patternmatch function for globbing filenames with windows wildcards:
+// thanx to   Jack Handy - jakkhandy@hotmail.com
+// found here: http://www.codeproject.com/KB/string/wildcmp.aspx
+/*
+	if (wildcmp("bl?h*e", "blah.exg")) {
+		std::cout << "we have a match!\n";
+	} else {
+		std::cout << "  no match =(\n";
+	}
+*/
+int wildcmp(const char *wild, const char *string) {
+  // Written by Jack Handy - jakkhandy@hotmail.com
 
-int main(int argc, char* argv[])
-{
-	using namespace APP_NAME;
-	std::vector<std::string> vec;
+  const char *cp = NULL, *mp = NULL;
+
+  while ((*string) && (*wild != '*')) {
+    if ((*wild != *string) && (*wild != '?')) {
+      return 0;
+    }
+    wild++;
+    string++;
+  }
+
+  while (*string) {
+    if (*wild == '*') {
+      if (!*++wild) {
+        return 1;
+      }
+      mp = wild;
+      cp = string+1;
+    } else if ((*wild == *string) || (*wild == '?')) {
+      wild++;
+      string++;
+    } else {
+      wild = mp;
+      string = cp++;
+    }
+  }
+
+  while (*wild == '*') {
+    wild++;
+  }
+  return !*wild;
+}
+
+int testPrintDir(std::string  strDir, std::string strPattern="*"){
+  struct dirent *ent;
+  DIR *dir;
+	dir = opendir (strDir.c_str());
+
+  if (dir != NULL) {
+    /* print all the files and directories within directory */
+    while ((ent = readdir (dir)) != NULL) {
+			if (wildcmp(strPattern.c_str(), ent->d_name)){
+				printf ("%s\n", ent->d_name);
+			}	
+    }
+    closedir (dir);
+		return EXIT_SUCCESS;
+  } else {
+    /* could not open directory */
+    perror ("DIR NOT FOUND!");
+    return EXIT_FAILURE;
+  }
+}
+
+using namespace APP_NAME;
+
+void testGetSetDel(std::string filename){
+		std::vector<std::string> vec;
 //	vec.push_back("Hallo");
 //	vec.push_back("PI");
-	//Command::get("c:\\LinkSrc.txt", vec);
+//	Command::get(filename, vec);
+	Command::set(filename,"Lollipop2");
+	Command::set(filename,"LolliCount","4.322","NUMBER");
+	Command::set(filename,"LolliName", "Lutz");
+ 	Command::get(filename, vec);
+	Command::del(filename,"Lollipop2");
+ 	Command::get(filename);
+}
 
-	Command::set("c:\\TagTest.txt","Lollipop");
-	Command::set("c:\\TagTest.txt","LolliCount","4.322","NUMBER");
-	Command::set("c:\\TagTest.txt","LolliName", "Lutz");
- 	Command::get("c:\\TagTest.txt", vec);
-	Command::del("c:\\TagTest.txt","LolliCountXXX");
- 	Command::get("c:\\TagTest.txt");
-	exit(0);
-	// testing load/save of tags
-	std::string filename="c:\\LinkSrc.txt";
+void testLoadSave(std::string filename){	// testing load/save of tags
 	File testFile(filename);
-//	testFile.setTag(Tag("BOOLTAG"));
-//  testFile.setTag(*(new NumberTag("PI",3.141592)));
-//  testFile.setTag(*(new StringTag("Hallo","Lutz")));
+	testFile.setTag(Tag("BOOLTAG"));
+	testFile.setTag(*(new NumberTag("PI",3.141592)));
+	testFile.setTag(*(new StringTag("Hallo","Lutz")));
 	FS_HAL::load(testFile);
-//	FS_HAL::save(testFile);
+	FS_HAL::save(testFile);
+}
 
+void testHardLinkCreate(std::string filename){ 	
 	// testing the creation of a File Link
 	DWORD result ;
-	result = FS_HAL::createHardLink("c:\\LinkDest.txt",filename);
-	result = FS_HAL::createHardLink("c:\\LinkDest2.txt","c:\\LinkDest.txt");
+	result = FS_HAL::createHardLink("c:\\metatree\\LinkDest.txt",filename);
+	result = FS_HAL::createHardLink("c:\\metatree\\LinkDest2.txt",
+	                                       "c:\\metatree\\LinkDest.txt");
 	FS_HAL::unload();
+}
 
-	// testing a bucket tag-sort:
+void testBucketSort(){	// testing a bucket tag-sort:
 	const std::string tag1="1stName", tag2="2ndName", tag3="3rdName";
 
 	std::vector<Tag> vec_SortTags;
@@ -94,6 +164,24 @@ int main(int argc, char* argv[])
 	rootBucket.addFileToBucket(myFileL);
 
 	rootBucket.debug_print("--");
+}
+
+
+
+
+int main(int argc, char* argv[])
+{
+	testPrintDir("c:\\metatree\\test_src", "*.txt");
+
+	testGetSetDel("c:\\metatree\\TagTest.txt");
+
+	std::string filename="c:\\metatree\\LinkSrc.txt";
+
+	testLoadSave(filename);
+
+	testHardLinkCreate(filename);	
+
+	testBucketSort();
 
 	return 0;
 }

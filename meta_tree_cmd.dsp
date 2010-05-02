@@ -89,6 +89,10 @@ SOURCE=.\Bucket.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\Command.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\File.cpp
 # End Source File
 # Begin Source File
@@ -126,6 +130,10 @@ SOURCE=.\app.h
 # Begin Source File
 
 SOURCE=.\Bucket.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Command.h
 # End Source File
 # Begin Source File
 
