@@ -2,6 +2,8 @@
 //
 #pragma warning( disable :  4786 )
 
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <stdio.h>
 #include <vector>
 
@@ -59,7 +61,7 @@ int wildcmp(const char *wild, const char *string) {
   return !*wild;
 }
 
-int testPrintDir(std::string  strDir, std::string strPattern="*"){
+int testPrintDir(std::string  strDir, std::string strPattern="*", boolean recurse=true){
   struct dirent *ent;
   DIR *dir;
 	dir = opendir (strDir.c_str());
@@ -67,10 +69,20 @@ int testPrintDir(std::string  strDir, std::string strPattern="*"){
   if (dir != NULL) {
     /* print all the files and directories within directory */
     while ((ent = readdir (dir)) != NULL) {
-			if (wildcmp(strPattern.c_str(), ent->d_name)){
-				printf ("%s\n", ent->d_name);
-			}	
-    }
+			// use stat(path+file) to check for dir or file
+			if (strcmp(ent->d_name, ".") !=0 &&  strcmp(ent->d_name, "..") !=0){
+				std::string strFullName = strDir +"\\"+std::string(ent->d_name);
+				std::string strType;
+				struct stat statData;
+				int result = stat(strFullName.c_str(),&statData);
+				if (result == 0){
+					strType = (statData.st_mode & _S_IFDIR)?"DIR":"FILE";
+				}
+				if (wildcmp(strPattern.c_str(), ent->d_name) || (statData.st_mode & _S_IFDIR)){
+					printf ("%s <%s>\n", strFullName.c_str(),strType.c_str());//ent->d_name);
+				}	
+			}
+		}
     closedir (dir);
 		return EXIT_SUCCESS;
   } else {
@@ -171,8 +183,9 @@ void testBucketSort(){	// testing a bucket tag-sort:
 
 int main(int argc, char* argv[])
 {
-	testPrintDir("c:\\metatree\\test_src", "*.txt");
 
+	testPrintDir("c:\\metatree\\test_src", "*.txt");
+/*
 	testGetSetDel("c:\\metatree\\TagTest.txt");
 
 	std::string filename="c:\\metatree\\LinkSrc.txt";
@@ -182,7 +195,7 @@ int main(int argc, char* argv[])
 	testHardLinkCreate(filename);	
 
 	testBucketSort();
-
+*/
 	return 0;
 }
 
