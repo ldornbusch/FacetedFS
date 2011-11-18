@@ -1,20 +1,23 @@
 // FS_HAL.h: Schnittstelle für die Klasse FS_HAL.
 // 
 // FS_HAL is a small abstraction layer wich will provide 
-// the funtionality to create hard_links and load/store data in 
+// the funtionality to create directories, hard_links and load/store data in 
 // ADSs. All methods which operate to the outside (the OS[Windows]) will communicate 
 // through this class. The class contains static functions, so it is possible 
 // to use the methods without an instance.
 // However you have to call FS_HAL::unload() to be sure, that all
 // resources will be freed. usually this will happen at the end of your program.
 // 
+// The Idea was to make it easier to port this application to a different platform
+// (dont know if it is possible!), or change the storage format/procedure.
+//
 // This class will load the Kernel32.dll and store it into a static var
 // also it will retrieve the pointer to the CreateHardLink-function
 // The DLL will not be freed unless FS_HAL::unload() is called.
 // on each creation of a hard link it will be checked, if the dll was loaded
 // if not it will be loaded
 //
-// For loading and saving Tags it will use a AlternateDataStream into which 
+// For loading and saving Tags it will use an AlternateDataStream into which 
 // the tags will be written by an binary format.
 //
 //////////////////////////////////////////////////////////////////////
@@ -50,6 +53,7 @@ namespace APP_NAME{
 		FS_HAL();
 		virtual ~FS_HAL();
 		static DWORD createHardLink(const std::string DestPath, const std::string SourcePath);
+		static DWORD createDirectory(const std::string DestPath);
 		static DWORD init();
 		static void unload();
 		static int load(File& file, const std::vector<std::string> filter=std::vector<std::string>());

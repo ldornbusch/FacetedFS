@@ -3,7 +3,7 @@
 //////////////////////////////////////////////////////////////////////
 #pragma warning( disable :  4786 )
 
-
+#include <direct.h>
 #include <stdio.h>
 #include <tchar.h>
 
@@ -92,6 +92,23 @@ DWORD FS_HAL::createHardLink(std::string DestPath, std::string SourcePath)
 	DWORD retVal=0;
 	init();
 	if ( !pfCreateHardLink( DestPath.c_str(), SourcePath.c_str(), NULL )){
+	  // API call failed
+    retVal = GetLastError() ;
+	}
+	return retVal;
+}
+ 
+/**
+	This Function will create a directory. 
+	@param	std::string DestPath		The Directory which should be created (no inbetweens!)
+	@returns	returns the Windows ErrorCode, if operation failed, 
+						if operation succeeded, function will return 0
+*/
+DWORD FS_HAL::createDirectory(std::string DestPath)
+{
+	DWORD retVal=0;
+	init();
+	if ( !mkdir(DestPath.c_str())){
 	  // API call failed
     retVal = GetLastError() ;
 	}
@@ -219,6 +236,7 @@ int FS_HAL::load(File& file, const std::vector<std::string> filter){
 	@returns int: 0, if no error occured or errorcode
 */
 int FS_HAL::save(const File& file){
+	int retVal = FILE_NOT_FOUND;
 
 	std::map<std::string, APP_NAME::Tag*>::const_iterator it = 
 		file.map_FileTags.begin();
@@ -247,71 +265,73 @@ int FS_HAL::save(const File& file){
 										+ ValuesChunkSize ;
 	std::string adsFileName = file.file_name+ADS_NAME ;
 	FILE* Handle = fopen(adsFileName.c_str(), "w");
+  if (Handle!=0){
+		TagFile FileHeader;
+		ChunkContainer Tags, Values;
+		FileHeader.FormatSpecifier = FILE_ID;
+		FileHeader.MajorVersion = 0;
+		FileHeader.MinorVersion = 1;
+		Tags.ChunkID = CHUNK_ID_TAGS;
+		Tags.ChunkLen = TagsChunkSize;
+		Values.ChunkID = CHUNK_ID_VALS;
+		Values.ChunkLen = ValuesChunkSize;
 
-	TagFile FileHeader;
-	ChunkContainer Tags, Values;
-	FileHeader.FormatSpecifier = FILE_ID;
-	FileHeader.MajorVersion = 0;
-	FileHeader.MinorVersion = 1;
-	Tags.ChunkID = CHUNK_ID_TAGS;
-	Tags.ChunkLen = TagsChunkSize;
-	Values.ChunkID = CHUNK_ID_VALS;
-	Values.ChunkLen = ValuesChunkSize;
+		// 1st: write Fileheader 
+		fwrite(&FileHeader.FormatSpecifier ,4, 1, Handle);
+		fputc(FileHeader.MajorVersion, Handle);
+		fputc(FileHeader.MinorVersion, Handle);
 
-	// 1st: write Fileheader 
-	fwrite(&FileHeader.FormatSpecifier ,4, 1, Handle);
-	fputc(FileHeader.MajorVersion, Handle);
-	fputc(FileHeader.MinorVersion, Handle);
+		// 2nd: write TagContainer Header
+		fputc(Tags.ChunkID, Handle);
+		fwrite(&Tags.ChunkLen, 4, 1, Handle);
 
-	// 2nd: write TagContainer Header
-	fputc(Tags.ChunkID, Handle);
-	fwrite(&Tags.ChunkLen, 4, 1, Handle);
+		// 3rd: write each TagChunk
+		// this variable sums up all bytes in the Valuechunk 
+		// of variable length and helps us to point to the offset 
+		// where the Valuechunk will be written
+		int ValueOffset = 0;		
+		// This variable sums up all Tags which have ValueChunk
+		int ValueCount = 0;			
+		for (it=file.map_FileTags.begin();it!=file.map_FileTags.end(); ++it){
+			TagChunk Tag2Write;
+			Tag2Write.ChunkLen = sizeof_TagChunk + it->first.length();
+			Tag2Write.TagType = it->second->getType();
+			Tag2Write.ChunkOffset = 0; 
+			if (Tag2Write.TagType != 0){
+				Tag2Write.ChunkOffset = sizeof_TagFile 
+					                    + Tags.ChunkLen 
+					                    + sizeof_ChunkContainer 
+				                      + (sizeof_ValueChunk * ValueCount++) 
+															+ ValueOffset;
+			}
+			ValueOffset+= it->second->getLength();
 
-	// 3rd: write each TagChunk
-	// this variable sums up all bytes in the Valuechunk 
-	// of variable length and helps us to point to the offset 
-	// where the Valuechunk will be written
-	int ValueOffset = 0;		
-	// This variable sums up all Tags which have ValueChunk
-	int ValueCount = 0;			
-	for (it=file.map_FileTags.begin();it!=file.map_FileTags.end(); ++it){
-		TagChunk Tag2Write;
-		Tag2Write.ChunkLen = sizeof_TagChunk + it->first.length();
-		Tag2Write.TagType = it->second->getType();
-		Tag2Write.ChunkOffset = 0; 
-		if (Tag2Write.TagType != 0){
-			Tag2Write.ChunkOffset = sizeof_TagFile 
-				                    + Tags.ChunkLen 
-				                    + sizeof_ChunkContainer 
-			                      + (sizeof_ValueChunk * ValueCount++) 
-														+ ValueOffset;
+			fwrite(&Tag2Write.ChunkLen, 4, 1, Handle);
+			fwrite(&Tag2Write.ChunkOffset, 4, 1, Handle);
+			fwrite(&Tag2Write.TagType, 1, 1, Handle);
+			fwrite(it->first.c_str(), it->first.length(), 1, Handle);
 		}
-		ValueOffset+= it->second->getLength();
 
-		fwrite(&Tag2Write.ChunkLen, 4, 1, Handle);
-		fwrite(&Tag2Write.ChunkOffset, 4, 1, Handle);
-		fwrite(&Tag2Write.TagType, 1, 1, Handle);
-		fwrite(it->first.c_str(), it->first.length(), 1, Handle);
+		// 4th: write ValuesContainer Header
+		fputc(Values.ChunkID, Handle);
+		fwrite(&Values.ChunkLen, 4, 1, Handle);
+
+
+	// 5th:write each ValueChunk
+		for (it=file.map_FileTags.begin();it!=file.map_FileTags.end(); ++it){
+			ValueChunk Val2Write;
+	    if (it->second->getType()!=0){
+				Val2Write.ChunkLen = sizeof_ValueChunk + it->second->getLength();
+		    BYTE* mem = (BYTE*) malloc(sizeof(BYTE)*it->second->getLength());
+				it->second->writeValue(mem);
+				fwrite(&Val2Write.ChunkLen, 4, 1, Handle);
+				fwrite(mem, it->second->getLength(), 1, Handle);
+				free(mem);
+				mem = 0;
+	    }
+		}
+		retVal = FILE_OK;
+		fclose(Handle);
 	}
-
-	// 4th: write ValuesContainer Header
-	fputc(Values.ChunkID, Handle);
-	fwrite(&Values.ChunkLen, 4, 1, Handle);
-
-
-// 5th:write each ValueChunk
-	for (it=file.map_FileTags.begin();it!=file.map_FileTags.end(); ++it){
-		ValueChunk Val2Write;
-    if (it->second->getType()!=0){
-			Val2Write.ChunkLen = sizeof_ValueChunk + it->second->getLength();
-	    BYTE* mem = (BYTE*) malloc(sizeof(BYTE)*it->second->getLength());
-			it->second->writeValue(mem);
-			fwrite(&Val2Write.ChunkLen, 4, 1, Handle);
-			fwrite(mem, it->second->getLength(), 1, Handle);
-			free(mem);
-			mem = 0;
-    }
-	}
-	fclose(Handle);
-	return 0;
+	return retVal;
 }

@@ -1,6 +1,7 @@
 // meta_tree_cmd.cpp : Definiert den Einsprungpunkt für die Konsolenanwendung.
 //
 #pragma warning( disable :  4786 )
+#pragma comment( lib, "winmm" )
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -15,64 +16,31 @@
 #include "StringTag.h"
 #include "Command.h"
 
+using namespace APP_NAME;
 
-// patternmatch function for globbing filenames with windows wildcards:
-// thanx to   Jack Handy - jakkhandy@hotmail.com
-// found here: http://www.codeproject.com/KB/string/wildcmp.aspx
-/*
-	if (wildcmp("bl?h*e", "blah.exg")) {
-		std::cout << "we have a match!\n";
-	} else {
-		std::cout << "  no match =(\n";
-	}
-*/
-int wildcmp(const char *wild, const char *string) {
-  // Written by Jack Handy - jakkhandy@hotmail.com
 
-  const char *cp = NULL, *mp = NULL;
-
-  while ((*string) && (*wild != '*')) {
-    if ((*wild != *string) && (*wild != '?')) {
-      return 0;
-    }
-    wild++;
-    string++;
-  }
-
-  while (*string) {
-    if (*wild == '*') {
-      if (!*++wild) {
-        return 1;
-      }
-      mp = wild;
-      cp = string+1;
-    } else if ((*wild == *string) || (*wild == '?')) {
-      wild++;
-      string++;
-    } else {
-      wild = mp;
-      string = cp++;
-    }
-  }
-
-  while (*wild == '*') {
-    wild++;
-  }
-  return !*wild;
+int testPrintDir(std::string  strDir, std::string strPattern="*", bool recurse=true){
+	return Command::collectFiles(strDir,strPattern, std::vector<std::string>(),recurse).size();
 }
 
-int testPrintDir(std::string  strDir, std::string strPattern="*", boolean recurse=true){
+
+int testPrintDir_OLD(std::string  strDir, std::string strPattern="*", bool recurse=true){
   struct dirent *ent;
   DIR *dir;
 	dir = opendir (strDir.c_str());
-
-  if (dir != NULL) {
+	int retVal = 0;
+  if (dir != 0) {
     /* print all the files and directories within directory */
-    while ((ent = readdir (dir)) != NULL) {
+		std::string strFullName ;
+		std::string strType ;
+		bool isDir ;
+	  while ((ent = readdir (dir)) != NULL) {
 			// use stat(path+file) to check for dir or file
 			if (strcmp(ent->d_name, ".") !=0 &&  strcmp(ent->d_name, "..") !=0){
-				std::string strFullName = strDir +"\\"+std::string(ent->d_name);
-				std::string strType;
+				strFullName = strDir +"\\"+std::string(ent->d_name);
+				strType = "N/A";
+/*
+				// this is more compatible, however it needs an additional function call
 				struct stat statData;
 				int result = stat(strFullName.c_str(),&statData);
 				if (result == 0){
@@ -81,51 +49,78 @@ int testPrintDir(std::string  strDir, std::string strPattern="*", boolean recurs
 				if (wildcmp(strPattern.c_str(), ent->d_name) || (statData.st_mode & _S_IFDIR)){
 					printf ("%s <%s>\n", strFullName.c_str(),strType.c_str());//ent->d_name);
 				}	
+*/
+				// this is now win32 only!
+				isDir = 	(ent->data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) !=0;
+				strType = (isDir)?"DIR":"FILE";		
+				int match = 0;//Command::wildcmp(strPattern.c_str(), ent->d_name) ;
+				if (match && (!isDir)){
+				//if ((!isDir)){
+					printf ("%s <%s>\n", strFullName.c_str(),strType.c_str());//ent->d_name);
+					retVal++;
+				}	
+				if (isDir && recurse){
+					retVal += testPrintDir(strFullName, strPattern, recurse);
+				}
 			}
 		}
     closedir (dir);
-		return EXIT_SUCCESS;
+		return retVal;
   } else {
     /* could not open directory */
     perror ("DIR NOT FOUND!");
-    return EXIT_FAILURE;
+    return -1;
   }
 }
 
-using namespace APP_NAME;
 
-void testGetSetDel(std::string filename){
+int testGetSetDel(std::string filename){
 		std::vector<std::string> vec;
 //	vec.push_back("Hallo");
 //	vec.push_back("PI");
 //	Command::get(filename, vec);
-	Command::set(filename,"Lollipop2");
-	Command::set(filename,"LolliCount","4.322","NUMBER");
-	Command::set(filename,"LolliName", "Lutz");
- 	Command::get(filename, vec);
-	Command::del(filename,"Lollipop2");
- 	Command::get(filename);
+	DWORD result ;
+	result = Command::set(filename,"Lollipop2");
+	result += Command::set(filename,"LolliCount","4.322","NUMBER");
+	result += Command::set(filename,"LolliName", "Lutz");
+ 	result += Command::get(filename, vec);
+	result += Command::del(filename,"Lollipop2");
+ 	result += Command::get(filename);
+	return result;
 }
 
-void testLoadSave(std::string filename){	// testing load/save of tags
+int testLoadSave(std::string filename){	// testing load/save of tags
+	DWORD result ;
 	File testFile(filename);
+	result = FS_HAL::load(testFile);
 	testFile.setTag(Tag("BOOLTAG"));
+
+	NumberTag initial=NumberTag("increment",1.0);
+  NumberTag* tmpTag = ((NumberTag*)(&(testFile.getTag("increment"))));
+	if (testFile.hasTag("increment")){
+		tmpTag->setValue(tmpTag->getValue()+1.0);
+	}else{
+		tmpTag=&initial;
+	}
+	testFile.setTag(*tmpTag);
+
 	testFile.setTag(*(new NumberTag("PI",3.141592)));
 	testFile.setTag(*(new StringTag("Hallo","Lutz")));
-	FS_HAL::load(testFile);
-	FS_HAL::save(testFile);
+	result += FS_HAL::save(testFile);
+	return result;
 }
 
-void testHardLinkCreate(std::string filename){ 	
+int testHardLinkCreate(std::string filename){ 	
 	// testing the creation of a File Link
 	DWORD result ;
-	result = FS_HAL::createHardLink("c:\\metatree\\LinkDest.txt",filename);
-	result = FS_HAL::createHardLink("c:\\metatree\\LinkDest2.txt",
-	                                       "c:\\metatree\\LinkDest.txt");
+	result = FS_HAL::createHardLink("c:\\meta_tree\\test_dst\\LinkDest.txt",filename);
+	result += FS_HAL::createHardLink("c:\\meta_tree\\test_dst\\LinkDest2.txt",
+                                  "c:\\meta_tree\\test_dst\\LinkDest.txt");
 	FS_HAL::unload();
+	return result;
 }
 
-void testBucketSort(){	// testing a bucket tag-sort:
+int testBucketSort(){	// testing a bucket tag-sort:
 	const std::string tag1="1stName", tag2="2ndName", tag3="3rdName";
 
 	std::vector<Tag> vec_SortTags;
@@ -176,26 +171,41 @@ void testBucketSort(){	// testing a bucket tag-sort:
 	rootBucket.addFileToBucket(myFileL);
 
 	rootBucket.debug_print("--");
+	return 0;
 }
 
-
+int testCreateDir(std::string dirname){
+	return FS_HAL::createDirectory(dirname);
+}
 
 
 int main(int argc, char* argv[])
 {
+	DWORD start = timeGetTime(); 
 
-	testPrintDir("c:\\metatree\\test_src", "*.txt");
+	int result = 0;//testPrintDir("c:\\meta_tree\\test_src", "*.h");
+
+	DWORD end = timeGetTime(); 
+
+	printf ("%d files found in %d milliseconds\n",result, (end-start));
+
+	std::string filename="c:\\meta_tree\\LinkSrc.txt";
+
+	result = testLoadSave(filename);
 /*
-	testGetSetDel("c:\\metatree\\TagTest.txt");
 
-	std::string filename="c:\\metatree\\LinkSrc.txt";
+	result = testGetSetDel("c:\\meta_tree\\TagTest.txt");
 
-	testLoadSave(filename);
+	testCreateDir("c:\\meta_tree\\test_dst");
 
-	testHardLinkCreate(filename);	
+	result = testHardLinkCreate(filename);	
 
-	testBucketSort();
+	result = Command::get("c:\\meta_tree\\DoesNotExists.txt");
+
+  result = testBucketSort();
 */
-	return 0;
+	Command::list(Command::collectFiles("c:\\meta_tree\\", "link*.txt",std::vector<std::string>(), false));
+
+	return result;
 }
 
