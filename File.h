@@ -27,6 +27,7 @@ namespace APP_NAME{
 		std::map<std::string, APP_NAME::Tag*> map_FileTags;
 
 		void setTag(Tag&);
+		void removeTag(const std::string strTagName);
 		bool hasTag(const std::string strTagName) const ;
 		Tag& getTag(const std::string strTagName) ;
 	};

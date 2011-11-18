@@ -5,9 +5,10 @@
 // basic tasks.
 // This is a list of what is implemented:
 //		meta_tree get(filename, 
-//									[TAGLIST]) :				retrieve all tags or the given tags
+//									[TAGLIST]) :				prints all tags or the given tags
 //																			from a file/directory (which means 
-//																			all files in this directory)
+//																			all files in this directory) which
+//																			have these tags
 //
 //		meta_tree set(filename, 
 //									tagname, 
@@ -71,6 +72,10 @@ namespace APP_NAME{
     static int search (std::string src_dir, std::vector<std::pair<std::string, std::string*> > tags);
 
 		static std::string getTypeName(int iType);
+		static std::vector<std::string> collectFiles(std::string  strDir, std::string strPattern="*", 
+			                                           std::vector<std::string>retVal=std::vector<std::string>(),
+																								 bool recurse=true);
+		static int wildcmp(const char *wild, const char *string) ;
 	};
 }
 

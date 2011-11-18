@@ -30,6 +30,14 @@ void File::setTag(Tag& tag2set){
 	}
 }
 
+void File::removeTag(std::string TagName){
+	std::map<std::string,APP_NAME::Tag*>::iterator it;
+	it = this->map_FileTags.find(TagName);
+	if (it != this->map_FileTags.end()){
+		this->map_FileTags.erase(it);
+	}
+}
+
 bool File::hasTag(const std::string strTagName) const {
 	return this->map_FileTags.find(strTagName)!=map_FileTags.end();
 }
