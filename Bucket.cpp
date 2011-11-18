@@ -80,7 +80,7 @@ void Bucket::debug_print(const std::string preset){
 	printf(this->strName.c_str());
 	printf(":\n");
 
-	for (std::map<std::string, void*>::iterator it1 = folder.begin(); 
+	for (std::map<std::string, Bucket*>::iterator it1 = folder.begin(); 
 	                                            it1!= folder.end(); it1++){
 		std::string strBucketVal = (*it1).first;
 		Bucket* tmp_folder= (Bucket*)(*it1).second;
