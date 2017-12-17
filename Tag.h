@@ -1,4 +1,4 @@
-// Tag.h: Schnittstelle für die Klasse Tag.
+// Tag.h: Interface for Class Tag.
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -15,20 +15,20 @@
 
 namespace APP_NAME{
 
-	enum tag_type{	
-		TAG_TYPE_BOOL, 
-		TAG_TYPE_NUMBER, 
-		TAG_TYPE_STRING 
+	enum tag_type{
+		TAG_TYPE_BOOL,
+		TAG_TYPE_NUMBER,
+		TAG_TYPE_STRING
 	};
 
-	class Tag  
+	class Tag
 	{
-		std::string tag_name;		
+		std::string tag_name;
 	public:
 		Tag();
 		Tag(std::string tag_name);
 		virtual ~Tag();
-		// this function will alway return a string representation of  which can 
+		// this function will alway return a string representation of  which can
 		std::string getTagname() const{ return this->tag_name;};
 		virtual std::string getStringValue() const { return "true";	}
 		virtual int getLength() const { return 0;	}

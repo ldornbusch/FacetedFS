@@ -1,4 +1,4 @@
-// meta_tree_cmd.cpp : Definiert den Einsprungpunkt für die Konsolenanwendung.
+// meta_tree_cmd.cpp : main entrypoint for console application.
 //
 #pragma warning( disable :  4786 )
 #pragma comment( lib, "winmm" )
@@ -9,6 +9,7 @@
 #include <vector>
 
 #include <dirent.h>
+#include <mmsystem.h>
 
 #include "FS_HAL.h"
 #include "bucket.h"
@@ -33,32 +34,33 @@ int testPrintDir_OLD(std::string  strDir, std::string strPattern="*", bool recur
     /* print all the files and directories within directory */
 		std::string strFullName ;
 		std::string strType ;
-		bool isDir ;
-	  while ((ent = readdir (dir)) != NULL) {
+		bool isDir = false ;
+	    while ((ent = readdir (dir)) != NULL) {
 			// use stat(path+file) to check for dir or file
 			if (strcmp(ent->d_name, ".") !=0 &&  strcmp(ent->d_name, "..") !=0){
 				strFullName = strDir +"\\"+std::string(ent->d_name);
 				strType = "N/A";
-/*
+
 				// this is more compatible, however it needs an additional function call
 				struct stat statData;
 				int result = stat(strFullName.c_str(),&statData);
 				if (result == 0){
 					strType = (statData.st_mode & _S_IFDIR)?"DIR":"FILE";
+					isDir = (statData.st_mode & _S_IFDIR);
 				}
-				if (wildcmp(strPattern.c_str(), ent->d_name) || (statData.st_mode & _S_IFDIR)){
+				if (Command::wildcmp(strPattern.c_str(), ent->d_name) || (statData.st_mode & _S_IFDIR)){
 					printf ("%s <%s>\n", strFullName.c_str(),strType.c_str());//ent->d_name);
-				}	
-*/
+				}
+/*
 				// this is now win32 only!
 				isDir = 	(ent->data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) !=0;
-				strType = (isDir)?"DIR":"FILE";		
-				int match = 0;//Command::wildcmp(strPattern.c_str(), ent->d_name) ;
+				strType = (isDir)?"DIR":"FILE";
+*/				int match = 0;//Command::wildcmp(strPattern.c_str(), ent->d_name) ;
 				if (match && (!isDir)){
 				//if ((!isDir)){
 					printf ("%s <%s>\n", strFullName.c_str(),strType.c_str());//ent->d_name);
 					retVal++;
-				}	
+				}
 				if (isDir && recurse){
 					retVal += testPrintDir(strFullName, strPattern, recurse);
 				}
@@ -93,7 +95,8 @@ int testLoadSave(std::string filename){	// testing load/save of tags
 	DWORD result ;
 	File testFile(filename);
 	result = FS_HAL::load(testFile);
-	testFile.setTag(Tag("BOOLTAG"));
+	Tag t1("BOOLTAG");
+	testFile.setTag(t1);
 
 	NumberTag initial=NumberTag("increment",1.0);
   NumberTag* tmpTag = ((NumberTag*)(&(testFile.getTag("increment"))));
@@ -110,7 +113,7 @@ int testLoadSave(std::string filename){	// testing load/save of tags
 	return result;
 }
 
-int testHardLinkCreate(std::string filename){ 	
+int testHardLinkCreate(std::string filename){
 	// testing the creation of a File Link
 	DWORD result ;
 	result = FS_HAL::createHardLink("c:\\meta_tree\\test_dst\\LinkDest.txt",filename);
@@ -131,12 +134,13 @@ int testBucketSort(){	// testing a bucket tag-sort:
 	File myFileA("FileA"), myFileB("FileB"), myFileC("FileC"), myFileD("FileD");
 	File myFileE("FileE"), myFileF("FileF"), myFileG("FileG"), myFileH("FileH");
 	File myFileI("FileI"), myFileJ("FileJ"), myFileK("FileK"), myFileL("FileL");
-	myFileA.setTag(Tag(tag1));
-	myFileA.setTag(Tag(tag2));
-	myFileA.setTag(Tag(tag3));
-	myFileB.setTag(Tag(tag1));
-	myFileB.setTag(Tag(tag2));
-	myFileC.setTag(Tag(tag1));
+	Tag t1(tag1), t2(tag2), t3(tag3);
+	myFileA.setTag(t1);
+	myFileA.setTag(t2);
+	myFileA.setTag(t3);
+	myFileB.setTag(t1);
+	myFileB.setTag(t2);
+	myFileC.setTag(t1);
 
 	myFileE.setTag(*(new NumberTag(tag1,1.0)));
 	myFileF.setTag(*new NumberTag(tag1,2.0));
@@ -181,11 +185,11 @@ int testCreateDir(std::string dirname){
 
 int main(int argc, char* argv[])
 {
-	DWORD start = timeGetTime(); 
+	DWORD start = timeGetTime();
 
 	int result = 0;//testPrintDir("c:\\meta_tree\\test_src", "*.h");
 
-	DWORD end = timeGetTime(); 
+	DWORD end = timeGetTime();
 
 	printf ("%d files found in %d milliseconds\n",result, (end-start));
 
@@ -198,7 +202,7 @@ int main(int argc, char* argv[])
 
 	testCreateDir("c:\\meta_tree\\test_dst");
 
-	result = testHardLinkCreate(filename);	
+	result = testHardLinkCreate(filename);
 
 	result = Command::get("c:\\meta_tree\\DoesNotExists.txt");
 

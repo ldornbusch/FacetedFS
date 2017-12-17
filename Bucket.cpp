@@ -1,4 +1,4 @@
-// bucket.cpp: Implementierung der Klasse bucket.
+// bucket.cpp: Implementation of Class bucket.
 //
 //////////////////////////////////////////////////////////////////////
 #pragma warning( disable :  4786 )
@@ -24,10 +24,10 @@ void Bucket::init(const std::vector<Tag> tags2sort){
 		this->vecTags2Match = tags2sort;
 		this->vecTags2Match.pop_back();
 	}
-	// this name will be "" and so we know this is the last tag in the 
-	// folder chain so all values which has all other tags will be ste 
+	// this name will be "" and so we know this is the last tag in the
+	// folder chain so all values which has all other tags will be ste
 	// into these buckets into the matched folder
-	this->strName = topTag.getTagname();		
+	this->strName = topTag.getTagname();
 }
 
 int Bucket::getFileNumber(){
@@ -43,17 +43,17 @@ bool Bucket::hasValue(const std::string value){
 */
 void Bucket::addFileToBucket(APP_NAME::File newFile){
 	// check if File has this Tag..
-	if (this->strName.length()>0 ){		
+	if (this->strName.length()>0 ){
 		// last folderchain: put file into own match-vector
 		if (newFile.hasTag(this->strName)){
 			std::string val = newFile.getTag(this->strName).getStringValue();
 
 			// check if already a bucket with this tag-value exists
-			Bucket* ptrBucket = 0; 
+			Bucket* ptrBucket = 0;
 			if (this->hasValue(val)){
 				ptrBucket = (Bucket*)this->folder[val];
-			}else{	
-				// create new bucket with this value, put its adress into the 
+			}else{
+				// create new bucket with this value, put its adress into the
 				// folder and recurse
 				ptrBucket = new Bucket();
 				ptrBucket->init(this->vecTags2Match);
@@ -80,7 +80,7 @@ void Bucket::debug_print(const std::string preset){
 	printf(this->strName.c_str());
 	printf(":\n");
 
-	for (std::map<std::string, Bucket*>::iterator it1 = folder.begin(); 
+	for (std::map<std::string, Bucket*>::iterator it1 = folder.begin();
 	                                            it1!= folder.end(); it1++){
 		std::string strBucketVal = (*it1).first;
 		Bucket* tmp_folder= (Bucket*)(*it1).second;
@@ -96,7 +96,7 @@ void Bucket::debug_print(const std::string preset){
 		printf(this->strName.c_str());
 		printf(":\n");
 
-		for (std::vector<File>::iterator it2 = vecNoMatch.begin(); 
+		for (std::vector<File>::iterator it2 = vecNoMatch.begin();
 		                                 it2!= vecNoMatch.end(); it2++){
 			printf(strOffset.c_str());
 			printf((*it2).file_name.c_str());

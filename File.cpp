@@ -1,4 +1,4 @@
-// File.cpp: Implementierung der Klasse File.
+// File.cpp:Implementation of Class File.
 //
 //////////////////////////////////////////////////////////////////////
 #pragma warning( disable :  4786 )
@@ -43,7 +43,7 @@ bool File::hasTag(const std::string strTagName) const {
 }
 
 Tag& File::getTag(const std::string strTagName) {
-	Tag* retVal;
+	Tag* retVal = 0;
 	if (this->hasTag(strTagName)){
 		retVal = this->map_FileTags[strTagName];
 	}
